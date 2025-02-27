@@ -14,9 +14,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get update && apt-get install sudo
 RUN sudo apt install ca-certificates
 
-RUN wget -c https://mcell.org/downloads/Blender-2.93-CellBlender-4.0.6-Debian-GNU-Linux-9-20220708.tar.gz -O - | tar -xz
+RUN wget -c --no-check-certificate https://mcell.org/downloads/Blender-2.93-CellBlender-4.0.6-Debian-GNU-Linux-9-20220708.tar.gz -O - | tar -xz
+ENV CELLBLENDER_BASE_PATH="Blender-2.93-CellBlender/2.93/"
+ENV MCELL_PATH="$CELLBLENDER_BASE_PATH/scripts/addons/cellblender/extensions/mcell/"
+ENV PATH="$PATH:$CELLBLENDER_BASE_PATH/python/bin/"
 
 COPY . . 
 
-# Run the script
+# Run the script command
 CMD ["python","spatial_model.py"]
