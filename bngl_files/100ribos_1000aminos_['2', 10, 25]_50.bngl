@@ -1,0 +1,100 @@
+begin model
+
+begin parameters
+    #diffusion constants
+    D_VOL 1e-6 # cm^2/s
+    MCELL_DIFFUSION_CONSTANT_3D_P D_VOL
+    MCELL_DIFFUSION_CONSTANT_3D_Y D_VOL
+    MCELL_DIFFUSION_CONSTANT_3D_Ribo D_VOL
+    #MCELL_DIFFUSION_CONSTANT_3D_mRNA_l D_VOL
+    #MCELL_DIFFUSION_CONSTANT_3D_mRNA_s D_VOL
+    MCELL_DIFFUSION_CONSTANT_3D_nucl D_VOL
+    
+    NA_um3 6.022e8 # Avogadro's number mutiplied by 1e-15 since we are using volume units of microns(^-3)
+
+    # Initial number molecules
+    P_i 0
+    Y_i 1000
+    Ribo_i 100
+    nucl_10 50
+    nucl_25 50
+
+    #rates
+    #need adaption, currently have way too little aminoresource
+    deg_r  0.005           #unimolecular (1/s)
+    init_r  10000 #1e+15/NA_um3   #bimolecular  (1/M * 1/s or 1/# "NA * V ")
+    elong_r 5000 #1e+18/NA_um3   #bimolecular when considering aminoacid
+    term_r  5000 #1e+15/NA_um3   #bimolecular when considering aminoacid
+    
+         
+
+    # Units: volumes in um3
+    #VolPM 0.0307
+    VolCP 0.1#50588 
+ 
+end parameters
+
+begin compartments
+    #PM 2 VolPM
+    CP 3 VolCP #3Dimensions and 1 microcubic in volume, volume compartment , only need one for now, 
+end compartments
+
+begin molecule types
+    P(s~10~25)
+    Y
+    nucl(l,r,R,i~0~1,t~0~1,s~10~25)
+    Ribo(N)
+end molecule types
+
+begin species
+    # we start with no protein to begin with
+    @CP:P(s~10) P_i
+    @CP:P(s~25) P_i
+    #aminoacid aka protein resource
+    @CP:Y Y_i
+    #ribosomes
+    @CP:Ribo(N) Ribo_i
+    #mRNA
+@CP:nucl(R,t~0,i~1,s~10,r!0,l).nucl(R,t~0,i~0,s~10,l!0,r!1).nucl(R,t~0,i~0,s~10,l!1,r!2).nucl(R,t~0,i~0,s~10,l!2,r!3).nucl(R,t~0,i~0,s~10,l!3,r!4).nucl(R,t~0,i~0,s~10,l!4,r!5).nucl(R,t~0,i~0,s~10,l!5,r!6).nucl(R,t~0,i~0,s~10,l!6,r!7).nucl(R,t~0,i~0,s~10,l!7,r!8).nucl(R,t~1,i~0,s~10,l!8,r) nucl_10
+@CP:nucl(R,t~0,i~1,s~25,r!0,l).nucl(R,t~0,i~0,s~25,l!0,r!1).nucl(R,t~0,i~0,s~25,l!1,r!2).nucl(R,t~0,i~0,s~25,l!2,r!3).nucl(R,t~0,i~0,s~25,l!3,r!4).nucl(R,t~0,i~0,s~25,l!4,r!5).nucl(R,t~0,i~0,s~25,l!5,r!6).nucl(R,t~0,i~0,s~25,l!6,r!7).nucl(R,t~0,i~0,s~25,l!7,r!8).nucl(R,t~0,i~0,s~25,l!8,r!9).nucl(R,t~0,i~0,s~25,l!9,r!10).nucl(R,t~0,i~0,s~25,l!10,r!11).nucl(R,t~0,i~0,s~25,l!11,r!12).nucl(R,t~0,i~0,s~25,l!12,r!13).nucl(R,t~0,i~0,s~25,l!13,r!14).nucl(R,t~0,i~0,s~25,l!14,r!15).nucl(R,t~0,i~0,s~25,l!15,r!16).nucl(R,t~0,i~0,s~25,l!16,r!17).nucl(R,t~0,i~0,s~25,l!17,r!18).nucl(R,t~0,i~0,s~25,l!18,r!19).nucl(R,t~0,i~0,s~25,l!19,r!20).nucl(R,t~0,i~0,s~25,l!20,r!21).nucl(R,t~0,i~0,s~25,l!21,r!22).nucl(R,t~0,i~0,s~25,l!22,r!23).nucl(R,t~1,i~0,s~25,l!23,r) nucl_25
+    
+end species
+
+
+begin reaction rules
+    #protein degradation
+    P(s~10) -> Y + Y + Y + Y + Y + Y + Y + Y + Y + Y deg_r
+    P(s~25) -> Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y + Y deg_r
+    
+    #ribosome binds to mRNA
+    nucl(R, t~0, i~1) + Ribo(N) -> nucl(R!1, t~0, i~1).Ribo(N!1) init_r
+    
+    #ribosome advances on mRNA
+    nucl(R!2, r!1).Ribo(N!2).nucl(R, l!1) + Y -> nucl(R,r!1).nucl(R!3,l!1).Ribo(N!3) elong_r
+    
+    
+    #ribsome is at termination point
+    nucl(R!1, t~1, s~10).Ribo(N!1) + Y -> P(s~10)+ nucl(R, t~1, s~10)+ Ribo(N) term_r 
+    nucl(R!1, t~1, s~25).Ribo(N!1) + Y -> P(s~25)+ nucl(R, t~1, s~25)+ Ribo(N) term_r 
+    #complexes dont move and are treated as surfaces
+    
+end reaction rules
+    
+    
+
+begin observables
+    Molecules r Ribo(N)
+    Molecules y Y
+    
+    Molecules p_10 P(s~10)
+    Molecules p_25 P(s~25)
+    Molecules r_initiated_10 nucl(R!1, i~1, s~10).Ribo(N!1)
+    Molecules r_initiated_25 nucl(R!1, i~1, s~25).Ribo(N!1)
+    Molecules r_elongating_10 nucl(R!1, t~0, i~0, s~10).Ribo(N!1)
+    Molecules r_elongating_25 nucl(R!1, t~0, i~0, s~25).Ribo(N!1)
+    Molecules r_terminating_10 nucl(R!1, t~1, i~0, s~10).Ribo(N!1)
+    Molecules r_terminating_25 nucl(R!1, t~1, i~0, s~25).Ribo(N!1)
+end observables
+
+
+end model

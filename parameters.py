@@ -67,3 +67,20 @@ def simulation_wrapper(state0, params, update,  elong_fun,sim_time, dt, record =
     states[-1] = next_t
         
     return states[1:]
+
+
+
+def calc_comp_score(dat1,dat2, diff_axis, mean_axis, criteria = 1e-10): 
+    
+    #compute differences along correct axis
+    differences_along_R1= np.diff(dat1, axis = diff_axis)
+    differences_along_R1[np.abs(differences_along_R1) < criteria] = np.nan
+    differences_along_R2= np.diff(dat2, axis = diff_axis)
+    differences_along_R2[np.abs(differences_along_R2) < criteria] = np.nan
+    #comput the mean
+    if mean_axis >= 0:
+        means1 = np.nanmean(differences_along_R1, axis = mean_axis)
+        means2 = np.nanmean(differences_along_R2, axis = mean_axis)
+        return means1/means2
+    else: 
+        return differences_along_R1/differences_along_R2
