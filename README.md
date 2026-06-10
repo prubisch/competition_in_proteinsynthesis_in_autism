@@ -24,7 +24,6 @@ The code uses following shorthands for the different resource conditions:
 
 - ul : unlimited
 - l : limited
-- nc : non-competitive
 - c : competitive
 
 This modifiers are used in function names and followed by: 
