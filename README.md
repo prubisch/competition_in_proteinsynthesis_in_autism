@@ -10,6 +10,7 @@ All sigures and subfigures will be automatically safes to the directory *figures
 - Numpy 1.25.3
 - Skopt 0.9.0
 - Cmcrameri 1.8
+  
 *Cmcrameri* is a collection of colourmaps and styles. Information on how to install it can be found here:
 https://github.com/callumrollo/cmcrameri 
 
