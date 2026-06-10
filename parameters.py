@@ -1,5 +1,9 @@
 import numpy as np
 
+#simulation parameters
+sim_time = 200 
+dt = 0.001
+sampling = 500 #recording resolution
 
 #rates
 rng = np.random.RandomState(seed = 5)
@@ -10,7 +14,9 @@ rng = np.random.RandomState(seed = 5)
 #standard number of mRNAs, initial mRNA concentration per mRNA and ribosome range
 N = 100
 x_init = 1
-Rs = np.linspace(0.001,200,50)
+Rs_unlim = np.linspace(0.001, 1, 50)
+Rs_lim = np.linspace(0.001, 400, 50)
+Rs_comp = np.linspace(0.001,200,50)
 
 #mRNA length descriptors
 mean_l, std_l = 2, 50
@@ -74,9 +80,8 @@ def calc_comp_score(dat1,dat2, diff_axis, mean_axis, criteria = 1e-10):
     
     #compute differences along correct axis
     differences_along_R1= np.diff(dat1, axis = diff_axis)
-    differences_along_R1[np.abs(differences_along_R1) < criteria] = np.nan
     differences_along_R2= np.diff(dat2, axis = diff_axis)
-    differences_along_R2[np.abs(differences_along_R2) < criteria] = np.nan
+    differences_along_R2[np.abs(differences_along_R2) == 0] = 1e-10 #to avoid divison by 0 errors
     #comput the mean
     if mean_axis >= 0:
         means1 = np.nanmean(differences_along_R1, axis = mean_axis)

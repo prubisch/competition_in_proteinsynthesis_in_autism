@@ -8,8 +8,8 @@ mpl.rcParams['figure.titlesize'] = 'medium'
 #set the colour palette to be color blind friendly
 import matplotlib.style as style
 #this package is not available anymore in newer version of matlab
-#style.use('seaborn-colorblind')
-style.use('seaborn-v0_8-colorblind')
+style.use('seaborn-colorblind')
+#style.use('seaborn-v0_8-colorblind')
    
 
 
@@ -76,3 +76,7 @@ def label_panels(axes, letters=None, **kwds):
 def clear_axes(ax):
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)  
+    
+def clear_second_axes(ax): 
+    ax.spines['top'].set_visible(False)
+    ax.spines['left'].set_visible(False)  
