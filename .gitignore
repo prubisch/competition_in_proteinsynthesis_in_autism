@@ -1,4 +1,4 @@
-/simulation_results/*.npy
+*.npy
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
