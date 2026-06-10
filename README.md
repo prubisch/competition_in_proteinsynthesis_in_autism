@@ -14,7 +14,7 @@ All sigures and subfigures will be automatically safes to the directory *figures
 *Cmcrameri* is a collection of colourmaps and styles. Information on how to install it can be found here:
 https://github.com/callumrollo/cmcrameri 
 
-**Optional**: If you do not want to download *Cmcrameri* you can change line 18 in *figure3_to_6...* to use any other continuous colour map: 
+**Optional**: If you do not want to download *Cmcrameri* you can change line 18 in *figure3_to_6_simulation_all_model_variations.ipynb* to use any other continuous colour map: 
 
 *palette = ... #your custom continuous colourmap*. 
 
