@@ -1,8 +1,8 @@
 import numpy as np
 
-model_descriptions = ['unlimited_non_competitive_R_unlimited_non_competitive_Y','unlimited_non_competitive_R_limited_non_competitive_Y','unlimited_non_competitive_R_limited_competitive_Y','limited_non_competitive_R_unlimited_non_competitive_Y','limited_non_competitive_R_limited_non_competitive_Y','limited_non_competitive R_limited_competitive_Y','limited_competitive_R_unlimited_non_competitive_Y','limited_competitive_R_limited_non_competitive_Y','limited_competitive_R_limited_competitive_Y',]
+model_descriptions = ['unlimited_R_unlimited_Y','unlimited_R_limited_Y','unlimited_R_competitive_Y','limited_R_unlimited_Y','limited_R_limited_Y','limited_R_competitive_Y','competitive_R_unlimited_Y','competitive_R_limited_Y','competitive_R_competitive_Y',]
 
-def ulncR_ulncY(parameters, state_var, dt , elong_fun):
+def ulR_ulY(parameters, state_var, dt , elong_fun):
 
     
     x_vec = state_var[0]   #free mRNA concentrations
@@ -20,7 +20,7 @@ def ulncR_ulncY(parameters, state_var, dt , elong_fun):
     return new_x_vec, new_xr_vec, new_y_vec
 
 
-def ulncR_lncY(parameters, state_var, dt , elong_fun):
+def ulR_lY(parameters, state_var, dt , elong_fun):
 
     
     x_vec = state_var[0]   #free mRNA concentrations
@@ -38,7 +38,7 @@ def ulncR_lncY(parameters, state_var, dt , elong_fun):
     return new_x_vec, new_xr_vec, new_y_vec
 
 
-def ulncR_lcY(parameters, state_var, dt , elong_fun):
+def ulR_cY(parameters, state_var, dt , elong_fun):
 
     
     x_vec = state_var[0]   #free mRNA concentrations
@@ -57,7 +57,7 @@ def ulncR_lcY(parameters, state_var, dt , elong_fun):
 
 
 
-def lncR_ulncY(parameters, state_var, dt , elong_fun):
+def lR_ulY(parameters, state_var, dt , elong_fun):
 
     
     x_vec = state_var[0]   #free mRNA concentrations
@@ -74,7 +74,7 @@ def lncR_ulncY(parameters, state_var, dt , elong_fun):
 
     return new_x_vec, new_xr_vec, new_y_vec
 
-def lncR_lncY(parameters, state_var, dt , elong_fun):
+def lR_lY(parameters, state_var, dt , elong_fun):
 
     
     x_vec = state_var[0]   #free mRNA concentrations
@@ -91,7 +91,7 @@ def lncR_lncY(parameters, state_var, dt , elong_fun):
 
     return new_x_vec, new_xr_vec, new_y_vec
 
-def lncR_lcY(parameters, state_var, dt , elong_fun):
+def lR_cY(parameters, state_var, dt , elong_fun):
 
     
     x_vec = state_var[0]   #free mRNA concentrations
@@ -109,7 +109,7 @@ def lncR_lcY(parameters, state_var, dt , elong_fun):
     return new_x_vec, new_xr_vec, new_y_vec
 
 
-def lcR_ulncY(parameters, state_var, dt , elong_fun):
+def cR_ulY(parameters, state_var, dt , elong_fun):
 
     
     x_vec = state_var[0]   #free mRNA concentrations
@@ -126,7 +126,7 @@ def lcR_ulncY(parameters, state_var, dt , elong_fun):
 
     return new_x_vec, new_xr_vec, new_y_vec
 
-def lcR_lncY(parameters, state_var, dt , elong_fun):
+def cR_lY(parameters, state_var, dt , elong_fun):
 
     
     x_vec = state_var[0]   #free mRNA concentrations
@@ -143,7 +143,7 @@ def lcR_lncY(parameters, state_var, dt , elong_fun):
 
     return new_x_vec, new_xr_vec, new_y_vec
 
-def lcR_lcY(parameters, state_var, dt , elong_fun):
+def cR_cY(parameters, state_var, dt , elong_fun):
 
     
     x_vec = state_var[0]   #free mRNA concentrations
