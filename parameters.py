@@ -41,22 +41,6 @@ b_4k = np.arange(b4+1,N,1, dtype = int)
 short_ind = np.concatenate((s_1k, s_2k), dtype = 'int')
 long_ind = np.concatenate((s_3k, s_4k, b_4k), dtype = 'int')
 
-#combinations from the reTASEP paper
-l_combs = np.array([[100,500],[500,2500],[100,2500]])
-
-
-#length dependent stiffness for reinitiation assumption
-def R_fernandes(length, stiffness_mRNA, xr): 
-    #might need to restrict to the 0 and 1 range... 
-    return np.sqrt(2*length) * (xr + (1-xr)*stiffness_mRNA)**0.5
-
-def stiffness_fun(length,k): 
-    return length**(-k)
-
-#factor how stiffness affect reinition rate
-stiffness_fac = 0.5
-
-
 
 #general simulation_wrapper
 def simulation_wrapper(state0, params, update,  elong_fun,sim_time, dt, record = [True, 100]): 
