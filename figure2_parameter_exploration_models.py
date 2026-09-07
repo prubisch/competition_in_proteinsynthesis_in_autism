@@ -17,10 +17,15 @@ import os
 
 model_list = [ulR_ulY, ulR_lY, ulR_cY, lR_ulY, lR_lY, lR_cY, cR_ulY, cR_lY, cR_cY]
 
+Rs_comps = [[0.5,1.0],[0.5,1.0],[0.5,1.0],[200,400],[200,400],[200,400],[50,100],[50,100],[50,100]]
 
-def slope_calc(α_h, β_h , model): 
+f_names = ['unlimitedR_unlimitedY_rho', 'unlimitedR_limitedY_rho','unlimitedR_competitiveY_rho', 'limitedR_unlimitedY_rho','limitedR_limitedY_rho','limitedR_competitiveY_rho','competitiveR_unlimitedY_rho','competitiveR_limitedY_rho','competitiveR_competitiveY_rho']
+
+lims = [-0.5,0.5]
+
+def slope_calc(α_h, β_h , model, Rs_here): 
     
-    R1, R2 = [50,100]
+    R1, R2 = Rs_here
 
  
     #prepare parameter dictionary
@@ -31,7 +36,6 @@ def slope_calc(α_h, β_h , model):
     
     parameters['γ'] = γ #γ_h
     parameters['l'] = l_samples
-    parameters['lp'] = stiffness_fun(parameters['l'],stiffness_fac)
     parameters['Y_max'] = N
     parameters['N'] = N
 
@@ -40,13 +44,13 @@ def slope_calc(α_h, β_h , model):
     init_state =np.array([x0, np.zeros([N]),np.zeros([N])]) 
     
     parameters['R'] = R1
-    y1 = simulation_wrapper(init_state,parameters,model,R_fernandes, sim_time, dt, [True, sampling])[-1, 2,:]
+    y1 = simulation_wrapper(init_state,parameters,model, sim_time, dt, [True, sampling])[-1, 2,:]
     
 
     parameters['R'] = R2
-    y2 = simulation_wrapper(init_state,parameters,model,R_fernandes, sim_time, dt, [True, sampling])[-1, 2,:]
+    y2 = simulation_wrapper(init_state,parameters,model, sim_time, dt, [True, sampling])[-1, 2,:]
     
-    slope_here = (np.mean(y1[long_ind] - y2[long_ind])/ np.mean(y1[short_ind] - y2[short_ind]))
+    slope_here = (np.mean(y2[long_ind] - y1[long_ind])/ np.mean(y2[short_ind] - y1[short_ind]))
     
     return slope_here
 
@@ -99,16 +103,11 @@ def exploration_plot(filename, colorbar_minmax):
     plt.savefig(figures_path + 'fig2_small_fig'+filename+'.pdf')
 
 
-def run_parallel(model, filename): 
-    res = Parallel(n_jobs = -1)(delayed(slope_calc) (alpha, beta, model) for alpha in alpha_vals for beta in beta_vals)
+def run_parallel(model, filename, r): 
+    res = Parallel(n_jobs = -1)(delayed(slope_calc) (alpha, beta, model, r) for alpha in alpha_vals for beta in beta_vals)
     np.save(sim_path+filename+'.npy',res)
 
 
-lims = [-0.5,0.5]
-
-f_names = ['unlimitedR_unlimitedY_rho', 'unlimitedR_limitedY_rho','unlimitedR_competitiveY_rho', 'limitedR_unlimitedY_rho','limitedR_limitedY_rho','limitedR_competitiveY_rho','competitiveR_unlimitedY_rho','competitiveR_limitedY_rho','competitiveR_competitiveY_rho']
-
-    
     
     
 if __name__ == "__main__":
@@ -128,12 +127,12 @@ if __name__ == "__main__":
     yn_valid = False
     while not yn_valid: 
         ans1 = input()
-        if ans1 is in ['y','yes','n','no']: 
+        if ans1 in ['y','yes','n','no']: 
             yn_valid = True
         else: 
             print('Invalid input! Valid input to indicate whether to plot figures from provided data: (y/n) or (yes/no)')
         
-    if ans1 is in ['y','yes']: 
+    if ans1 in ['y','yes']: 
         #check if preload data exists
         rerun = False
         for f in f_names: 
@@ -149,11 +148,11 @@ if __name__ == "__main__":
         while not valid_num:
             ans_num = input()
             if ans_num.isdigit(): 
-                num_param = int(input)
+                num_param = int(ans_num)
                 valid_num = True
                 print('Warning long compute time needed! Are you sure you want to proceed? (y/n)')
                 ans2 = input()
-                if ans2 is in ['y','yes']: 
+                if ans2 in ['y','yes']: 
                     print('Running simulations with '+str(num_param)+' values for α and β.')
                 else:
                     valid_num = False
@@ -167,7 +166,7 @@ if __name__ == "__main__":
         alpha_vals = np.linspace(0.001, 0.5,num_param)
         beta_vals = np.linspace(0.001, 0.5,num_param)
         for m_ind, m in enumerate(model_list): 
-            run_parallel(m, f_names[m_ind]+file_ext)
+            run_parallel(m, f_names[m_ind]+file_ext, Rs_comps[m_ind])
             
     print('Plotting single subfigures.')
     for f in f_names: 

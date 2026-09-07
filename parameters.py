@@ -43,7 +43,7 @@ long_ind = np.concatenate((s_3k, s_4k, b_4k), dtype = 'int')
 
 
 #general simulation_wrapper
-def simulation_wrapper(state0, params, update,  elong_fun,sim_time, dt, record = [True, 100]): 
+def simulation_wrapper(state0, params, update, sim_time, dt, record = [True, 100]): 
     
     states = np.zeros([int(sim_time/dt/record[1])+1, state0.shape[0], state0.shape[1]])
     next_t = state0
@@ -53,7 +53,7 @@ def simulation_wrapper(state0, params, update,  elong_fun,sim_time, dt, record =
         if record[0]:
             if t % record[1] == 0:
                 states[int(t/record[1])+1] = next_t
-        next_t = update(params, next_t, dt, elong_fun)
+        next_t = update(params, next_t, dt)
     states[-1] = next_t
         
     return states[1:]

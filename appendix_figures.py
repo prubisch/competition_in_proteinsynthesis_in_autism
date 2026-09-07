@@ -19,6 +19,7 @@ sim_path = 'simulation_results/'
 
 models = [unlimited_r, limited_r, competitive_r]
 R_nums = [Rs_unlim, Rs_lim, Rs_comp]
+f_names = ['unlimited_R_effective_rates', 'limited_R_effective_rates', 'competitive_R_effective_rates']
 
 
 def run_sim_random_populations(model, r_range, n_runs): 
@@ -111,7 +112,7 @@ def appendix_figure_random_populations_vis_R_dep_y_prod(results, Rs_h):
         for g in range(len(labels)): 
             #add example traces? 
             ax.plot(Rs_h[i], np.mean(results[i][:,:,0,g],axis = 0), label = labels[g], color = palette[g])
-            ax.plot(Rs_h[i], np.mean(results[i][:,:,2,g],axis = 0), linestyle = ':')
+            ax.plot(Rs_h[i], np.mean(results[i][:,:,2,g],axis = 0), linestyle = ':', color = palette[g])
             ax_st.plot(Rs_h[i], np.mean(results[i][:,:,1,g],axis = 0), label = labels[g], color = palette[g])
             
         if i ==2:
@@ -142,12 +143,12 @@ if __name__ == "__main__":
     yn_valid = False
     while not yn_valid: 
         ans1 = input()
-        if ans1 is in ['y','yes','n','no']: 
+        if ans1 in ['y','yes','n','no']: 
             yn_valid = True
         else: 
             print('Invalid input! Valid input to indicate whether to plot figures from provided data: (y/n) or (yes/no)')
         
-    if ans1 is in ['y','yes']: 
+    if ans1 in ['y','yes']: 
         #check if preload data exists
         rerun = False
         for f in f_names: 
@@ -163,11 +164,11 @@ if __name__ == "__main__":
         while not valid_num:
             ans_num = input()
             if ans_num.isdigit(): 
-                num_runs = int(input)
+                num_runs = int(ans_num)
                 valid_num = True
                 print('Warning long compute time needed! Are you sure you want to proceed? (y/n)')
                 ans2 = input()
-                if ans2 is in ['y','yes']: 
+                if ans2 in ['y','yes']: 
                     print('Running simulations with '+str(num_runs)+' random population samples.')
                 else:
                     valid_num = False
@@ -179,12 +180,12 @@ if __name__ == "__main__":
             file_ext = '_'+str(num_runs)+'_random_samples'
         for m_ind, m in enumerate(models): 
             data = run_sim_random_populations(m, R_nums[m_ind], num_runs)
-            np.save(sim_path+f_names[m_ind]+file_ext+'.npy', data)
+            np.save(sim_path+f_names[m_ind]+'random_populations_'+file_ext+'.npy', data)
         
     print('Plotting Figure for random population sample statistics. (Appendix)')
     data_coll = []
     for m_ind, m in enumerate(models): 
-        data_coll.append(np.load(sim_path+f_names[m_ind]+file_ext+'.npy'))
+        data_coll.append(np.load(sim_path+'random_populations_'+f_names[m_ind]+file_ext+'.npy'))
             
     appendix_figure_random_populations_vis_R_dep_y_prod(data_coll, R_nums)
         

@@ -33,7 +33,6 @@ def run_sim(model, r_range):
     
     parameters['γ'] = γ
     parameters['l'] = l_samples
-    parameters['lp'] = stiffness_fun(parameters['l'],stiffness_fac)
     parameters['Y_max'] = N
     parameters['N'] = N
 
@@ -257,11 +256,13 @@ def fig4_vis_diff_effective_rates(results_all, ribo_ind, plot_till = int(dt*samp
     axes = {}
     for letter in 'ABC':
         axes[letter] = ax = fig.add_subplot(specs[letter])
-    label_panels(axes, letters=['A: Unlimited R', 'B: Spatially restricted, limited R', 'C: Competitive R'], postfix='', offset_left=1.2)
+    #label_panels(axes, letters='ABC', postfix='', offset_left=1.2)
     for a in list('ABC'):
         axes[a].set_axis_off()
 
     ribo_state = ['I','II', 'III']
+    model = ['A: Unlimited R', 'B: Spatially restricted, limited R', 'C: Competitive R']
+    ycoord = [0.00253, 0.053, 0.1134]
     classes = ['<1k', '1-2k', '2-3k', '3-4k', '>4k']
     
 
@@ -278,6 +279,8 @@ def fig4_vis_diff_effective_rates(results_all, ribo_ind, plot_till = int(dt*samp
             ax.plot(np.arange(0,sim_time,dt*sampling)[:plot_till],np.arange(0,sim_time,dt*sampling)[:plot_till]*0,color = 'grey', linestyle = ':')
             ax.set_xlabel('t')
             ax.set_ylabel('$α_{eff,i}-β_{eff,i}$')
+            if i == 0: 
+                ax.text(-21.5,ycoord[j],model[j], horizontalalignment = 'left')
             if i == 2 and j == 0: 
                 ax.legend(bbox_to_anchor=(1.0, 1.0), loc='upper left',  frameon = False)
             clear_axes(ax)
@@ -332,10 +335,10 @@ def fig5_vis_resource_abundance(results_all, ribo_ind, plot_till = int(dt*sampli
         ax.set_title(mod_state[j])
         ax.set_ylabel('$r$', color = palette[0])
         ax2.set_ylabel('$y$', color = palette[2])
-        ax.tick_params(axis='y', colors=palette[0])
-        ax2.tick_params(axis='y', colors=palette[2])
-        if i == 2 and j == 2: 
-                ax.legend(bbox_to_anchor=(1.2, 1.0), loc='upper left',  frameon = False)
+        ax.tick_params(axis='y', color=palette[0])
+        ax2.tick_params(axis='y', color=palette[2])
+        if j == 2:
+            ax.legend(bbox_to_anchor=(1.2, 1.0), loc='upper left',  frameon = False)
         clear_axes(ax)
         clear_second_axes(ax2)
 
@@ -417,16 +420,16 @@ if __name__ == "__main__":
     if not os.path.isdir(sim_path):
         os.makedirs(sim_path)
         
-    print('Plot figures from provided input?')
+    print('Plot figures from provided input?(y/n)')
     yn_valid = False
     while not yn_valid: 
         ans1 = input()
-        if ans1 is in ['y','yes','n','no']: 
+        if ans1 in ['y','yes','n','no']: 
             yn_valid = True
         else: 
             print('Invalid input! Valid input to indicate whether to plot figures from provided data: (y/n) or (yes/no)')
         
-    if ans1 is in ['y','yes']: 
+    if ans1 in ['y','yes']: 
         #check if preload data exists
         rerun = False
         for f in f_names: 
@@ -458,4 +461,4 @@ if __name__ == "__main__":
     print('Figure 5')
     fig5_vis_resource_abundance([unlim_R_pop,lim_R_pop, comp_R_pop],[r_to_plot_ul, r_to_plot_l, r_to_plot_d], plot_till = 100)
     print('Base for figure 6 (Paper figures postprocessed with inkscape).')
-    fig6_comp_y_prod_for_theory_visulation(comp_R_pop, Rs_comp, safe = True)
+    fig6_comp_y_prod_for_theory_visulation(comp_R_pop, Rs_comp)

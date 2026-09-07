@@ -71,4 +71,5 @@ if __name__ == "__main__":
     if not os.path.isdir(figures_path):
         os.makedirs(figures_path)
     plot_figures()
+    print('Subfigure A is an addition with inkscape which will not show in the newly plotted figure.')
     
