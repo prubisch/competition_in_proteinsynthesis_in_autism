@@ -441,13 +441,13 @@ if __name__ == "__main__":
         
     if rerun: 
         unlim_R_pop = run_sim(unlimited_r, Rs_unlim)
-        np.save(sim_path+'unlimited_R_effective_rates.npy', unlim_R_pop)
+        np.save(sim_path+'unlimited_R_effective_rates.npy', unlim_R_pop[:,:100])
 
         lim_R_pop = run_sim(limited_r, Rs_lim)
-        np.save(sim_path+'limited_R_effective_rates.npy', lim_R_pop)
+        np.save(sim_path+'limited_R_effective_rates.npy', lim_R_pop[:,:100])
 
         comp_R_pop = run_sim(competitive_r, Rs_comp)
-        np.save(sim_path+'competitive_R_effective_rates.npy', comp_R_pop)
+        np.save(sim_path+'competitive_R_effective_rates.npy', comp_R_pop[:,:100])
         
     #plot data
     unlim_R_pop = np.load(sim_path+'unlimited_R_effective_rates.npy')
