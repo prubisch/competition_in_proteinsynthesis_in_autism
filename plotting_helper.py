@@ -5,11 +5,8 @@ mpl.rcParams['savefig.dpi'] = 300
 mpl.rcParams['font.size'] = 16
 mpl.rcParams['legend.fontsize'] = 'large'
 mpl.rcParams['figure.titlesize'] = 'medium'
-#set the colour palette to be color blind friendly
-import matplotlib.style as style
-#this package is not available anymore in newer version of matlab
-style.use('seaborn-colorblind')
-#style.use('seaborn-v0_8-colorblind')
+
+
    
 
 
