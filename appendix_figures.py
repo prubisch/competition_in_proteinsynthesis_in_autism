@@ -99,7 +99,7 @@ def appendix_figure_random_populations_vis_R_dep_y_prod(results, Rs_h):
     for a in list('A'):
         axes[a].set_axis_off()
 
-    mod_state = ['Unlimited R','Spatially restricted R', 'Competetive R']
+    mod_state = ['Unlimited R','Spatially restricted R', 'Competitive R']
     labels = ['<1k', '1-2k', '2-3k', '3-4k', '>4k']
     offset = 0.25
 

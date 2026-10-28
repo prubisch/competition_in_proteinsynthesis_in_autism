@@ -8,8 +8,8 @@ All figures and subfigures will be automatically safed to the directory *figures
 ### Python Dependencies and Package version 
 - Python 3.9
 - Matplotlib 3.5.1
-- Numpy 1.25.3
-- Sklearn 1.2.2
+- Numpy 1.23.5
+- Scikit-learn 1.2.2
 - Cmcrameri 1.8
   
 *Cmcrameri* is a collection of colourmaps and styles. Information on how to install it can be found here:

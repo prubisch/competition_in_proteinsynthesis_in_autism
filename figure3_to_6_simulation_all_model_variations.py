@@ -139,7 +139,7 @@ def fig3_vis_R_dep_y_prod_ratio(results, Rs_h, indications_ind):
     for a in list('ABC'):
         axes[a].set_axis_off()
 
-    mod_state = ['Unlimited R','Spatially restricted R', 'Competetive R']
+    mod_state = ['Unlimited R','Spatially restricted R', 'Competitive R']
     r_labels = ['I', 'II', 'III', 'IV']
     offset = 0.25
 
@@ -314,15 +314,15 @@ def fig5_vis_resource_abundance(results_all, ribo_ind, plot_till = int(dt*sampli
         axes[a].set_axis_off()
 
     ribo_state = ['I','II', 'III']
-    line_styles = ['solid','dotted', 'dashed']
-    mod_state = ['Unlimited R','Spatially restricted, limited R', 'Competetive R']
+    line_styles = ['dotted','dashed', 'solid']
+    mod_state = ['Unlimited R','Spatially restricted, limited R', 'Competitive R']
     
     for j in range(3): 
         ax = fig.add_subplot(gs[0,j*2])
         ax2 = ax.twinx()
         for i in range(3): 
             ax.plot(np.arange(0,sim_time,dt*sampling)[:plot_till], results_all[j][ribo_ind[j][i],:plot_till,6,0], color = palette[0], label = ribo_state[i], linestyle = line_styles[i])
-            ax2.plot(np.arange(0,sim_time,dt*sampling)[:plot_till], results_all[j][ribo_ind[j][i],:plot_till,7,0], color = palette[2], label = ribo_state[i], linestyle = line_styles[i])
+            ax2.plot(np.arange(0,sim_time,dt*sampling)[:plot_till], results_all[j][ribo_ind[j][i],:plot_till,7,0], color = palette[4], label = ribo_state[i], linestyle = line_styles[i])
         
         ax.plot(np.arange(0,sim_time,dt*sampling)[:plot_till],np.arange(0,sim_time,dt*sampling)[:plot_till]*0,color = 'grey', linestyle = ':')
         ax2.plot(np.arange(0,sim_time,dt*sampling)[:plot_till],np.arange(0,sim_time,dt*sampling)[:plot_till]*0,color = 'grey', linestyle = ':')
@@ -334,9 +334,9 @@ def fig5_vis_resource_abundance(results_all, ribo_ind, plot_till = int(dt*sampli
         ax2.set_ylim(0,maxy)
         ax.set_title(mod_state[j])
         ax.set_ylabel('$r$', color = palette[0])
-        ax2.set_ylabel('$y$', color = palette[2])
+        ax2.set_ylabel('$y$', color = palette[4])
         ax.tick_params(axis='y', color=palette[0])
-        ax2.tick_params(axis='y', color=palette[2])
+        ax2.tick_params(axis='y', color=palette[4])
         if j == 2:
             ax.legend(bbox_to_anchor=(1.2, 1.0), loc='upper left',  frameon = False)
         clear_axes(ax)

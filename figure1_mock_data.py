@@ -58,14 +58,16 @@ def plot_figures():
 
 
     ax = fig.add_subplot(gs[2,2])
-    ax.plot(l_samples, np.ones([l_samples.shape[0]]), color = 'grey',  linestyle = ':', label = 'Uniform regulation')
-    ax.plot([l_samples[0],l_samples[-1]], [1.4,0.25], color = 'k', label = 'Length-dependent regulation')
+    ax.plot(l_samples, np.ones([l_samples.shape[0]]), color = 'grey',  linestyle = ':')
+    ax.plot(l_samples, np.ones([l_samples.shape[0]])+0.25, color = palette[4],  linestyle = 'dashed', label = 'Uniform upregulation')
+    ax.plot(l_samples, np.ones([l_samples.shape[0]])-0.33, color = palette[4],  linestyle = '-', label = 'Uniform downregulation')
+    ax.plot([l_samples[0],l_samples[-1]], [1.4,0.25], color = palette[0], label = 'Length-dependent regulation')
     ax.set_ylabel('$\\frac{p(Fmr1^{-/y})}{p(Wt)}$')
-    ax.set_xlabel('$l$')
+    ax.set_xlabel('$l$ [nucleotides]')
     ax.legend(bbox_to_anchor=(1.0, 1.0), loc='upper left',  frameon = False)
     clear_axes(ax)
 
-    plt.savefig(figures_path+'fig1_problem_description_v2.pdf')
+    plt.savefig(figures_path+'fig1_problem_description.pdf')
 
 if __name__ == "__main__":
     if not os.path.isdir(figures_path):
