@@ -12,6 +12,7 @@ All figures and subfigures will be automatically safed to the directory *figures
 - Scikit-learn 1.2.2
 - Cmcrameri 1.8
 - Scipy 1.10.1
+- Pandas 1.5.3
   
 *Cmcrameri* is a collection of colourmaps and styles. Information on how to install it can be found here:
 https://github.com/callumrollo/cmcrameri 
