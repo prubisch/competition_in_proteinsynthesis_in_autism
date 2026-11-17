@@ -1,4 +1,7 @@
 jupyter_notebooks/
+CCDS_data/*.txt
+CCDS_data/CCDS_aa_sequence_human.xlsx
+CCDS_data/CCDS_aa_sequence_mouse.xlsx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

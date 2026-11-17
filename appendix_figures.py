@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 import matplotlib.style as style
 import os
 
+#import for data analytics of GO and CCDS data
+from ftplib import FTP
+import gzip
+from scipy import stats
+
 #import from .py files
 from plotting_helper import *
 from parameters import *
@@ -16,6 +21,7 @@ palette = cm.batlow(np.linspace(0,0.9,6))
 #check that directories exists for figures and simulation results
 figures_path = 'figures/'
 sim_path = 'simulation_results/'
+data_path = 'CCDS_data/'
 
 models = [unlimited_r, limited_r, competitive_r]
 R_nums = [Rs_unlim, Rs_lim, Rs_comp]
@@ -73,6 +79,8 @@ def run_sim_random_populations(model, r_range, n_runs):
     return results_population
 
 
+
+
 def appendix_figure_random_populations_vis_R_dep_y_prod(results, Rs_h): 
         
     layout = '''
@@ -127,6 +135,220 @@ def appendix_figure_random_populations_vis_R_dep_y_prod(results, Rs_h):
         
     
     plt.savefig(figures_path + 'appendix_random_population_protein_yield_all_ribosome_conditions.pdf')
+    
+    
+######## functions for bio-informatics analytics of GO and CCDS data 
+def retrieve_raw_data(species, to_retrieve, saved_f): 
+    ftp = FTP('ftp.ncbi.nlm.nih.gov')
+    ftp.login()
+    ftp.cwd('pub/CCDS/current_'+species+'/')
+    with open(data_path+saved_f+'_raw_'+species+'.txt', 'wb') as fp:
+        ftp.retrbinary('RETR '+to_retrieve, fp.write)
+    fp.close()
+    ftp.quit()
+    
+def retrieve_aa_data(species, to_retrieve, saved_f): 
+    ftp = FTP('ftp.ncbi.nlm.nih.gov')
+    ftp.login()
+    ftp.cwd('pub/CCDS/current_'+species+'/')
+    
+    #get the binary zip file
+    with open('temp_file.faa.gz', 'wb') as f: 
+        ftp.retrbinary('RETR '+to_retrieve, f.write)
+    ftp.quit()
+    f.close()
+    
+    #open the local zip file
+    with gzip.open('temp_file.faa.gz', 'rb') as f, open(data_path+saved_f+'_raw_'+species+'.txt', 'wb') as fp: 
+        fp.write(f.read())
+    
+    fp.close()
+    f.close()
+    #delete the local file
+    os.remove('temp_file.faa.gz')
+    
+    
+def retrieve_CCDS_ids_and_lengths_for_GO_genes(species, GO_gene_excel): 
+    pframe = pd.read_csv(data_path+'CCDS_id_mapping_raw_'+species+'.txt', sep = '	')
+    gframe = pd.read_excel(data_path+GO_gene_excel+'.xlsx')
+    aframe = pd.read_excel(data_path+'CCDS_aa_sequence_'+species+'.xlsx')
+    
+    id_list = []
+    length_list = []
+    av_length_list = []
+    sd_length_list = []
+    
+    #loop through the (SYN)GO list and retrieve the gene names
+    for g_name in gframe['hgnc_symbol']: 
+        #get the CCDS_ids from the CCDS_id-gene mapping file
+        inds = np.where(pframe['gene'].str.lower()==g_name.casefold())[0]
+        #check if there is an element in the index list, multiple will be stored in same column
+        if inds.shape[0] == 0: 
+            id_list.append([])
+            length_list.append([np.nan])
+            av_length_list.append(np.array([np.nan]))
+            sd_length_list.append(np.array([np.nan]))
+        else: 
+            n_list = []
+            l_list = np.array([])
+            for i in inds: 
+                #get the exact CCDS id for each match to the gene
+                ccds_id = pframe['ccds_id'][i]
+                n_list.append(ccds_id)
+                #look up the length for the specific CCDS_id
+                l_ind = np.where(aframe['CCDS_ID'] == ccds_id)[0]
+                #check that ccds_id has a length
+                if l_ind.shape[0] == 0: 
+                    l_list = np.append(l_list, np.nan)
+                else: 
+                    l_list = np.append(l_list, aframe['#aa'][l_ind[0]])
+                
+            id_list.append(n_list)
+            length_list.append(l_list)
+            #calculate mean, check that the slice is not empty
+            if np.sum(np.nan_to_num(l_list)) == 0.0: 
+                av_length_list.append([np.nan])
+                sd_length_list.append([np.nan])
+            else: 
+                av_length_list.append(np.nanmean(l_list))
+                sd_length_list.append(np.nanstd(l_list))
+    
+    gframe.insert(len(gframe.keys()), 'CCDS_ID', id_list)
+    gframe.insert(len(gframe.keys()), '#aa', length_list)
+    gframe.insert(len(gframe.keys()), 'μ(#aa)', av_length_list)
+    gframe.insert(len(gframe.keys()), 'σ(#aa)', sd_length_list)
+    gframe.to_excel(data_path+GO_gene_excel+'_'+species+'.xlsx')
+    
+    
+def extract_protein_length_matches(species, file_name): 
+    csv_content = []
+    
+    aa_file = open(data_path+file_name+'_raw_'+species+'.txt')
+    #per ccds_id
+    lines = aa_file.read().split('>')
+    for li in lines[1:]: 
+        #extract ccds_id
+        ccds_id, hs_num, aa_seq_p = li.split('|')
+        #combined the full aa_seq into one string
+        aa_seq = ''.join(aa_seq_p.split('\n')[1:])
+        #get length
+        csv_content.append([ccds_id,aa_seq,len(aa_seq)])
+    
+    
+    df = pd.DataFrame(csv_content, columns=['CCDS_ID', 'AA_sequence', '#aa'])
+    
+    df.to_excel(data_path+file_name+'_'+species+'.xlsx', index = False)
+    
+    #close and delete the unnecessary raw file
+    aa_file.close()
+    os.remove(data_path+file_name+'_raw_'+species+'.txt')
+    
+    
+def get_raw_data_files(species): 
+    retrieve_raw_data(species,'CCDS.current.txt', 'CCDS_id_mapping')
+    retrieve_aa_data(species, 'CCDS_protein.current.faa.gz', 'CCDS_aa_sequence')
+    extract_protein_length_matches(species, 'CCDS_aa_sequence')
+
+def check_for_overlaps(reference_frame, comparison_frame):
+    
+    reference_gene_list = reference_frame['hgnc_symbol'].to_list()
+    compare_gene_list = comparison_frame['hgnc_symbol'].to_list()
+    
+    overlap_list = [gene for gene in reference_gene_list if gene in compare_gene_list]
+    
+    filtered_reference_frame = reference_frame[~reference_frame['hgnc_symbol'].isin(overlap_list)]
+    filtered_comparison_frame = comparison_frame[~comparison_frame['hgnc_symbol'].isin(overlap_list)]
+            
+    return filtered_reference_frame, filtered_comparison_frame, overlap_list
+
+
+def convert_list_of_strings_to_array(clist): 
+    
+    carray = np.array([])
+    
+    for item in clist: 
+        carray = np.append(carray, np.fromstring(item.strip('[]'), dtype = float, sep = ' '))
+    return carray
+
+
+def plot_histo(GO_gene_excel1, GO_gene_excel2, label1, label2, remove_duplicates = True): 
+    gframe = pd.read_excel(data_path+GO_gene_excel1+'.xlsx')
+    rframe = pd.read_excel(data_path+GO_gene_excel2+'.xlsx')
+    
+    if remove_duplicates: 
+        gframe.drop_duplicates(subset = ['hgnc_symbol'])
+        rframe.drop_duplicates(subset = ['hgnc_symbol'])
+    
+    #ignoring overlapping genes
+    l1 = convert_list_of_strings_to_array(gframe['#aa'])
+    mean_l1 = gframe['μ(#aa)'].to_list()
+
+    
+    l2 =convert_list_of_strings_to_array(rframe['#aa'])
+    mean_l2 = rframe['μ(#aa)'].to_list()
+    
+    #perform wilcoxon ranksum test
+    statistics, pvalue = stats.ranksums(l1, l2, nan_policy = 'omit')
+    
+    
+    filtered_gframe, filtered_rframe, overlap = check_for_overlaps(gframe, rframe)
+    filtered_l1 = convert_list_of_strings_to_array(filtered_gframe['#aa'])
+    filtered_l2 = convert_list_of_strings_to_array(filtered_rframe['#aa'])
+    
+    #perform wilcoxon ranksum test
+    statistics_filtered, pvalue_filtered = stats.ranksums(filtered_l1, filtered_l2, nan_policy = 'omit')
+    
+    
+    
+    layout = '''
+    AABB
+    AABB
+    '''
+
+    fig = plt.figure(figsize=(12, 6))
+
+    height_ratios = [1,0.1]
+    width_ratios = [1,0.1,1,0.1]
+
+
+    specs, gs = panel_specs(layout, fig=fig)
+    gs.set_height_ratios(height_ratios)
+    gs.set_width_ratios(width_ratios)
+    gs.hspace=0.8
+    axes = {}
+    for letter in 'AB':
+        axes[letter] = ax = fig.add_subplot(specs[letter])
+    #label_panels(axes, letters='AB', postfix='', offset_left=1.2)
+    for a in list('AB'):
+        axes[a].set_axis_off()
+        
+    bin_width = 50
+    binwin = np.arange(0,2000, bin_width)
+        
+    ax = fig.add_subplot(gs[0,0])
+    ax.hist(l1, label = label1, color = palette[0], bins = binwin)
+    ax.hist(l2, label = label2, color = palette[4], bins = binwin, alpha = 0.75)
+    #ax.legend(bbox_to_anchor=(1.0, 1.0), loc='upper left',  frameon = False)
+    ax.set_xlabel('$l$ [#aa]')
+    ax.set_ylabel('# genes')
+    ax.set_title('All genes')
+    ax.text(900,100, 'p = %.4e'%pvalue)
+    clear_axes(ax)
+    
+    ax = fig.add_subplot(gs[0,2])
+    ax.hist(filtered_l1, label = label1, color = palette[0], bins = binwin)
+    ax.hist(filtered_l2, label = label2, color = palette[4], bins = binwin, alpha = 0.75)
+    ax.legend(bbox_to_anchor=(1.0, 1.0), loc='upper left',  frameon = False)
+    ax.set_xlabel('$l$ [#aa]')
+    ax.set_ylabel('# genes')
+    ax.set_title('Unique genes')
+    ax.text(900, 115, 'Excluded '+str(len(overlap))+' genes.')
+    ax.text(900,100, 'p = %.4e'%pvalue_filtered)
+    clear_axes(ax)
+    
+    
+    plt.savefig(figures_path+'appendixfig_genelength_histograms'+label1+'_'+label2+'.pdf')
+    
 
 if __name__ == "__main__":
     
@@ -139,7 +361,7 @@ if __name__ == "__main__":
     file_ext = ''
     num_runs = 100
         
-    print('Plot figures from provided data? (y/n)')
+    print('Plot figures from provided simulation data? (y/n)')
     yn_valid = False
     while not yn_valid: 
         ans1 = input()
@@ -188,6 +410,40 @@ if __name__ == "__main__":
         data_coll.append(np.load(sim_path+'random_populations_'+f_names[m_ind]+file_ext+'.npy'))
             
     appendix_figure_random_populations_vis_R_dep_y_prod(data_coll, R_nums)
+    
+    print('Download/Updating CCDS data? (y/n)')
+    yn_valid = False
+    while not yn_valid: 
+        ans1 = input()
+        if ans1 in ['y','yes','n','no']: 
+            yn_valid = True
+        else: 
+            print('Invalid input! Valid input to indicate whether to download CCDS data: (y/n) or (yes/no)')
         
+    if ans1 in ['y','yes']: 
+        get_raw_data_files('human')
+        get_raw_data_files('mouse')
         
+    else: 
+        if not os.path.isfile(data_path+'CCDS_aa_sequence_human.xlsx') and not os.path.isfile(data_path+'CCDS_aa_sequence_mouse.xlsx') and not os.path.isfile(data_path+'CCDS_id_mapping_raw_human.txt') and not os.path.isfile(data_path+'CCDS_id_mapping_raw_mouse.txt'): 
+            print('CCDS data does not (fully) exist. Downloading data.')
+            get_raw_data_files('human')
+            get_raw_data_files('mouse')
+    
+
+    retrieve_CCDS_ids_and_lengths_for_GO_genes('human', 'syngo_1.3_process-in-the-postsynapse_annotations')
+    retrieve_CCDS_ids_and_lengths_for_GO_genes('mouse', 'syngo_1.3_process-in-the-postsynapse_annotations')
+
+    retrieve_CCDS_ids_and_lengths_for_GO_genes('human', 'syngo_1.3_metabolism_annotations')
+    retrieve_CCDS_ids_and_lengths_for_GO_genes('mouse', 'syngo_1.3_metabolism_annotations')
+
+    retrieve_CCDS_ids_and_lengths_for_GO_genes('human', 'syngo_1.3_synaptic-signaling_annotations')
+    retrieve_CCDS_ids_and_lengths_for_GO_genes('mouse', 'syngo_1.3_synaptic-signaling_annotations')
+    
+    print('Plotting histograms and performing Wilcoxon rand sum test for SynGO sets.')
+    plot_histo('syngo_1.3_synaptic-signaling_annotations_human', 'syngo_1.3_metabolism_annotations_human', 'synaptic signalling', 'metabolism')
+
+    plot_histo('syngo_1.3_process-in-the-postsynapse_annotations_human', 'syngo_1.3_metabolism_annotations_human', 'postsynaptic processes', 'metabolism')
+    
+    
 
